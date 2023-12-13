@@ -1,0 +1,1 @@
+{"mappings":"AAAAA,QAAQC,IAAI,SACEC,SAASC,cAAc,UAC/BC,YAAc","sources":["src/index.js"],"sourcesContent":["console.log('hello')\nconst title = document.querySelector('.title');\ntitle.textContent = ' Goodbuy'"],"names":["console","log","document","querySelector","textContent"],"version":3,"file":"index.4aa68aad.js.map"}
