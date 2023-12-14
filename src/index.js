@@ -1,21 +1,25 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from "simplelightbox";
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
 
 const searchForm = document.querySelector('.search-form');
 const submitBtn = document.querySelector('button')
 const axios = require('axios').default;
-const gallery = document.querySelector('.gallery');
+const galery = document.querySelector('.gallery');
 const target = document.querySelector('.js-guard')
 let counter = 1;
+
 async function callback(entries, observer) {
     entries.forEach(async entry => {
         if(entry.isIntersecting){
             counter +=1;
             const data = await getPictures(searchForm.searchQuery.value);
-            console.log(data.data.totalHits/20)
             const markup = await createMarkup(data.data.hits);
-            gallery.insertAdjacentHTML('beforeend', markup);
+            galery.insertAdjacentHTML('beforeend', markup);
             if(counter === data.data.totalHits/20){
                 observer.unobserve(target);
+                Notify.failure("We're sorry, but you've reached the end of search results.")
             }
         } 
     });
@@ -26,21 +30,25 @@ let options = {
         rootMargin: "200px",
         threshold: 1.0,
       };
-  let observer = new IntersectionObserver(callback, options);
-  observer.observe(target);
+  
 submitBtn.addEventListener('click', handlerOnClick);
 
 async function handlerOnClick (e){
+    // counter = 1;
     e.preventDefault();
     const data = await getPictures(searchForm.searchQuery.value);
     const markup = await createMarkup(data.data.hits);
-    gallery.innerHTML = markup;
-    console.log(data.data.totalHits)
+    galery.innerHTML = await markup;
+    
     if(data.data.totalHits){
         Notify.success(`Hooray!We found ${data.data.totalHits} images`);
     } else {
         Notify.failure('Sorry, there are no images matching your search query. Please try again');
-    }
+    };
+    let observer = new IntersectionObserver(callback, options);
+    observer.observe(target);
+    const photoCard = document.querySelector('.photo-card');
+    photoCard.addEventListener('click', onClick);
 }
 
 async function getPictures (value){
@@ -55,8 +63,8 @@ async function getPictures (value){
 };
 
 async function createMarkup (arr){
-const response = await arr.map(({webformatURL, tags, likes, views, comments, downloads}) => {
-    return `<div class="photo-card">
+const response = await arr.map(({largeImageURL, webformatURL, tags, likes, views, comments, downloads}) => {
+    return `<a class="photo-card" href="${largeImageURL}">
     <img src="${webformatURL}" alt="${tags}" loading="lazy" />
     <div class="info">
       <p class="info-item">
@@ -72,7 +80,22 @@ const response = await arr.map(({webformatURL, tags, likes, views, comments, dow
         <b>Downloads ${downloads}</b>
       </p>
     </div>
-  </div>`
+    </a>`
 }).join('');
 return response;
 };
+
+
+function onClick(e){
+    e.preventDefault();
+    let gallery = new SimpleLightbox('.gallery a');
+    console.log(gallery)
+    if(e.target.classList.contains('photo-card')){
+        console.log('hello')
+        const options = {
+            captionsData: alt,
+            captionPosition: top,
+            captionDelay: 250,
+        };
+    }
+}
