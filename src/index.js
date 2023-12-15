@@ -6,7 +6,7 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 const searchForm = document.querySelector('.search-form');
 const submitBtn = document.querySelector('button')
 const axios = require('axios').default;
-const galery = document.querySelector('.gallery');
+const gallery = document.querySelector('.gallery');
 const target = document.querySelector('.js-guard')
 let counter = 1;
 
@@ -16,7 +16,8 @@ async function callback(entries, observer) {
             counter +=1;
             const data = await getPictures(searchForm.searchQuery.value);
             const markup = await createMarkup(data.data.hits);
-            galery.insertAdjacentHTML('beforeend', markup);
+            gallery.insertAdjacentHTML('beforeend', markup);
+            
             if(counter === data.data.totalHits/20){
                 observer.unobserve(target);
                 Notify.failure("We're sorry, but you've reached the end of search results.")
@@ -38,7 +39,7 @@ async function handlerOnClick (e){
     e.preventDefault();
     const data = await getPictures(searchForm.searchQuery.value);
     const markup = await createMarkup(data.data.hits);
-    galery.innerHTML = await markup;
+    gallery.innerHTML = await markup;
     
     if(data.data.totalHits){
         Notify.success(`Hooray!We found ${data.data.totalHits} images`);
@@ -47,15 +48,13 @@ async function handlerOnClick (e){
     };
     let observer = new IntersectionObserver(callback, options);
     observer.observe(target);
-    const photoCard = document.querySelector('.photo-card');
-    photoCard.addEventListener('click', onClick);
 }
 
 async function getPictures (value){
     const BASE_URL = 'https://pixabay.com/api/';
     const API_KEY = '33846839-b5c9af3d8a613bdc4bbe809f4';
     try {
-        const response = await axios.get(`${BASE_URL}?key=${API_KEY}&q=${value}&image_type='photo'&orientation='horizontal'&safesearch='true'&page=${counter}`);
+        const response = await axios.get(`${BASE_URL}?key=${API_KEY}&q=${value}&image_type='photo'&orientation='horizontal'&safesearch='true'&page=${counter}&per_page=20`);
         return response;
     } catch (error){
         console.log(error)
@@ -85,17 +84,15 @@ const response = await arr.map(({largeImageURL, webformatURL, tags, likes, views
 return response;
 };
 
-
+gallery.addEventListener('click', onClick)
 function onClick(e){
     e.preventDefault();
-    let gallery = new SimpleLightbox('.gallery a');
-    console.log(gallery)
-    if(e.target.classList.contains('photo-card')){
-        console.log('hello')
-        const options = {
-            captionsData: alt,
-            captionPosition: top,
-            captionDelay: 250,
-        };
-    }
+    if(e.target.closest('a').classList.contains('photo-card')){
+        console.log('hello');
+        let gallery = new SimpleLightbox('.gallery a', {
+            captionSelector: 'img',
+            captionDelay: 200,
+            overlayOpacity: 0.9,
+        });
+            }
 }
